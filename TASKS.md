@@ -1,7 +1,7 @@
 # TASKS — MVP Cardapio Digital CIICC
 
 Data: 2026-06-12
-Status geral: FASE_5_EM_ANDAMENTO
+Status geral: FASE_6_DOCUMENTAL_CONCLUIDA_AGUARDANDO_MERGE
 
 Este arquivo acompanha a execucao do projeto por fases. Deve ser atualizado a cada novo chat, branch ou PR.
 
@@ -254,7 +254,7 @@ Fora de escopo mantido nesta fase:
 
 ## FASE 5A — Migrations e RLS inicial Supabase Profiles
 
-Status: EM_ANDAMENTO
+Status: CONCLUIDA_E_MERGEADA
 
 Branch: feat/fase-5-supabase-profiles-migrations-rls
 Base segura: 00e746e
@@ -277,13 +277,11 @@ Base segura: 00e746e
 - [x] Documentar estrategia segura para primeiro admin.
 - [x] Manter Firebase legado ativo.
 - [x] Criar auditoria documental da Fase 5.
-
-### Pendente nesta fase
-
-- [ ] Validar `npm run lint` localmente ou via CI.
-- [ ] Validar `npm run build` localmente ou via CI.
-- [ ] Revisar SQL antes de aplicar em Supabase real.
-- [ ] Abrir PR separada da Fase 5.
+- [x] Validar `npm run lint` localmente ou via CI.
+- [x] Validar `npm run build` localmente ou via CI.
+- [x] Revisar SQL antes de aplicar em Supabase real.
+- [x] Abrir PR separada da Fase 5.
+- [x] PR #6 mergeada.
 
 ### Fora de escopo mantido
 
@@ -304,7 +302,7 @@ Base segura: 00e746e
 
 ## FASE 6 — Aplicar e validar Supabase Profiles/RLS no ambiente real
 
-Status: EM ANDAMENTO
+Status: CONCLUIDA_DOCUMENTALMENTE_AGUARDANDO_MERGE
 
 Base:
 - Fase 5 concluída e mergeada na main;
@@ -322,15 +320,16 @@ Concluído:
 - migration aplicada no Supabase real via Dashboard SQL Editor;
 - grants amplos em public.profiles corrigidos por hardening manual controlado;
 - grants finais validados para authenticated: INSERT, SELECT, UPDATE;
-- supabase/.temp/ adicionado ao .gitignore.
+- supabase/.temp/ adicionado ao .gitignore;
+- validação final npm run lint registrada como OK;
+- validação final npm run build registrada como OK;
+- PR #7 aberta;
+- PR #7 validada no gate final.
 
-Pendente:
+Pendente para próxima fase:
 - criar/validar primeiro admin manualmente sem versionar dados reais;
 - testar login Google admin;
-- testar bloqueio de usuário comum;
-- validação final npm run lint;
-- validação final npm run build;
-- abrir PR da Fase 6.
+- testar bloqueio de usuário comum.
 
 Fora de escopo mantido:
 - vendas;
