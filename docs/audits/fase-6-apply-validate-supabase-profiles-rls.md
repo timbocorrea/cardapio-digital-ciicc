@@ -98,16 +98,22 @@ Não foram iniciadas funcionalidades de:
 - dashboard operacional;
 - fechamento diário.
 
+## Validações
+
+- npm run lint: OK.
+- npm run build: OK.
+- PR #7 aberta.
+- Gate final da PR #7 executado.
+- Patch revisado contra escopo documental.
+- Dados sensíveis versionados: não identificados.
+
 ## Status
 
 FASE_6_SUPABASE_PROFILES_RLS_APLICADA_E_VALIDADA_PARCIALMENTE=SIM
+FASE_6_DOCUMENTAL=CONCLUIDA_AGUARDANDO_MERGE
 
-Pendente para conclusão total da Fase 6:
+Pendências transferidas para a próxima fase:
 
 - criar/validar primeiro admin manualmente sem versionar dados reais;
 - testar login Google admin;
-- testar bloqueio de usuário comum;
-- atualizar TASKS.md;
-- validar npm run lint;
-- validar npm run build;
-- abrir PR separada com alterações documentais.
+- testar bloqueio de usuário comum.
