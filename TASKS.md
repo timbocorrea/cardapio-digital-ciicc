@@ -211,3 +211,42 @@ Data de início: 2026-06-12
 - PWA/offline real.
 - Deploy produção.
 - Remoção total do Firebase sem validação.
+
+
+## FASE 4A — Perfis e Roles Supabase
+
+Status: CONCLUIDA_EM_PR_DRAFT
+
+Branch: feat/fase-4-supabase-profiles-roles
+
+- [x] Gate pós-merge da Fase 3.
+- [x] Branch de Fase 4 criada.
+- [x] Auditoria de App.tsx, AdminLogin, CustomerRegistrationGate, authTypes e serviços Supabase.
+- [x] Serviço inicial de profile Supabase criado.
+- [x] Leitura de profile por auth_user_id preparada.
+- [x] Helper de admin ativo criado.
+- [x] App.tsx ajustado para exigir profile admin ativo em sessão Supabase.
+- [x] Firebase legado mantido durante transição.
+- [x] Auditoria documental da Fase 4 revisada.
+- [x] Validação final lint/build.
+- [x] Commit local.
+- [x] Push da branch.
+- [x] PR separada.
+
+Fora de escopo mantido nesta fase:
+
+- Vendas.
+- Carrinho.
+- Checkout.
+- Estoque.
+- Lotes.
+- Pagamentos.
+- Comprovantes.
+- Storage.
+- PWA/offline real.
+- Deploy produção.
+- Migrations completas de negócio.
+- RLS final.
+- Remoção total do Firebase.
+- Dashboard operacional completo.
+- Fechamento diário.
