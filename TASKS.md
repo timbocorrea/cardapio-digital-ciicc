@@ -24,7 +24,7 @@ Status: EM_ANDAMENTO
 - [x] TASKS inicial criado.
 - [x] PRD completo do MVP.
 - [x] Arquitetura tecnica do MVP.
-- [ ] Modelo de dados Supabase.
+- [x] Modelo de dados Supabase.
 - [ ] Criterios finais de aceite.
 - [ ] PR documental da Fase 0.
 
@@ -125,3 +125,4 @@ Status: NAO_INICIADA
 - Firebase atual: legado/prototipo a migrar.
 - PRD vigente: docs/PRD_MVP.md.
 - Arquitetura tecnica vigente: docs/TECHNICAL_ARCHITECTURE_MVP.md.
+- Modelo de dados Supabase vigente: docs/SUPABASE_DATA_MODEL_MVP.md.

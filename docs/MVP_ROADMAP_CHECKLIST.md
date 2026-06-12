@@ -25,6 +25,7 @@ Sistema de autoatendimento interno para controle de retirada de mercadorias, pag
 - [x] Criar TASKS
 - [x] Criar PRD completo
 - [x] Criar arquitetura tecnica
+- [x] Criar modelo de dados Supabase
 
 ### FASE 1 — Limpeza e identidade
 - [ ] Atualizar README
