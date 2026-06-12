@@ -1,6 +1,7 @@
 {
-  "name": "Cardápio Digital",
-  "description": "Um cardápio digital elegante para celular que permite ao cliente ler QR Code, visualizar produtos, copiar a chave PIX e entrar em contato por WhatsApp, gerenciado por um painel de administrador rápido.",
-  "requestFramePermissions": ["camera"],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "name": "Cardápio Digital CIICC",
+  "description": "Sistema interno de autoatendimento para controle de retirada, pagamento e estoque em ambiente de trabalho controlado.",
+  "requestFramePermissions": [
+    "camera"
+  ]
 }

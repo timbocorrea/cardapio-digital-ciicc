@@ -1,7 +1,7 @@
 # TASKS — MVP Cardapio Digital CIICC
 
 Data: 2026-06-12
-Status geral: FASE_0_EM_ANDAMENTO
+Status geral: FASE_1_EM_ANDAMENTO
 
 Este arquivo acompanha a execucao do projeto por fases. Deve ser atualizado a cada novo chat, branch ou PR.
 
@@ -14,7 +14,7 @@ Este arquivo acompanha a execucao do projeto por fases. Deve ser atualizado a ca
 
 ## FASE 0 — Governanca e planejamento
 
-Status: EM_ANDAMENTO
+Status: CONCLUIDA
 
 - [x] Necessidade original registrada.
 - [x] Produto definido como autoatendimento interno.
@@ -26,16 +26,17 @@ Status: EM_ANDAMENTO
 - [x] Arquitetura tecnica do MVP.
 - [x] Modelo de dados Supabase.
 - [x] Criterios finais de aceite.
-- [ ] PR documental da Fase 0.
+- [x] PR documental da Fase 0 mergeada.
 
 ## FASE 1 — Limpeza e CI
 
-Status: NAO_INICIADA
+Status: EM_ANDAMENTO
 
-- [ ] README real do produto.
-- [ ] Titulo do app atualizado.
-- [ ] Arquivo de exemplo de variaveis.
-- [ ] CI com validacao de tipos e build.
+- [x] README real do produto.
+- [x] Titulo do app atualizado.
+- [x] Arquivo de exemplo de variaveis.
+- [x] CI com validacao de tipos e build.
+- [x] Mapeamento de legado Firebase/prototipo.
 
 ## FASE 2 — Autenticacao e Supabase
 
