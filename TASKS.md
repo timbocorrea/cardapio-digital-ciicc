@@ -25,7 +25,7 @@ Status: EM_ANDAMENTO
 - [x] PRD completo do MVP.
 - [x] Arquitetura tecnica do MVP.
 - [x] Modelo de dados Supabase.
-- [ ] Criterios finais de aceite.
+- [x] Criterios finais de aceite.
 - [ ] PR documental da Fase 0.
 
 ## FASE 1 — Limpeza e CI
@@ -126,3 +126,4 @@ Status: NAO_INICIADA
 - PRD vigente: docs/PRD_MVP.md.
 - Arquitetura tecnica vigente: docs/TECHNICAL_ARCHITECTURE_MVP.md.
 - Modelo de dados Supabase vigente: docs/SUPABASE_DATA_MODEL_MVP.md.
+- Criterios de aceite vigentes: docs/MVP_ACCEPTANCE_CRITERIA.md.
