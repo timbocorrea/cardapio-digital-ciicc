@@ -51,6 +51,17 @@ PAINEL_ADMIN_LIBERADO_PARA_USUARIO_COMUM=NAO
 BLOQUEIO_USUARIO_COMUM=OK
 ```
 
+### Logout admin
+
+```txt
+LOGIN_ADMIN_GOOGLE=OK
+SAIR_DO_PAINEL=OK
+CLICAR_ENTRAR_ADMIN_APOS_SAIR_ABRIU_PAINEL_DIRETO=NAO
+CLICAR_ENTRAR_ADMIN_APOS_SAIR_MOSTROU_LOGIN=SIM
+FLUXO_GOOGLE_SUPABASE_EXIGIDO_APOS_SAIR=SIM
+GOOGLE_PODE_REAUTENTICAR_SESSAO_DO_NAVEGADOR=SIM
+```
+
 ## Alterações técnicas realizadas
 
 ### src/App.tsx
@@ -65,6 +76,7 @@ BLOQUEIO_USUARIO_COMUM=OK
 - PIN legado deixou de chamar onLoginSuccess().
 - PIN passou a exibir mensagem controlada de bloqueio.
 - Google Supabase permanece como caminho válido de autenticação admin.
+- Logout admin encerra a sessão Supabase e impede reabertura direta do painel sem passar pelo fluxo Google/Supabase.
 
 ## Segurança
 
@@ -97,4 +109,4 @@ npm run build=OK
 
 ## Conclusão
 
-A Fase 7 validou tecnicamente o primeiro admin Supabase real, corrigiu o retorno pós-login Google, removeu o PIN como liberador de acesso admin durante a validação e comprovou que usuário comum sem profile admin ativo não acessa o painel administrativo.
+A Fase 7 validou tecnicamente o primeiro admin Supabase real, corrigiu o retorno pós-login Google, removeu o PIN como liberador de acesso admin durante a validação, comprovou que usuário comum sem profile admin ativo não acessa o painel administrativo e ajustou o logout admin para impedir reabertura direta do painel sem passar novamente pelo fluxo Google/Supabase.

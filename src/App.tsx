@@ -10,6 +10,7 @@ import { auth } from './firebase';
 import {
   getCurrentSession,
   onSupabaseAuthStateChange,
+  signOutFromSupabase,
   type AuthSession,
 } from './features/auth/supabaseAuthService';
 import {
@@ -173,6 +174,18 @@ export default function App() {
     }
   };
 
+  const handleAdminLogout = async () => {
+    try {
+      await signOutFromSupabase();
+    } catch (e) {
+      console.error('Erro ao encerrar sessão Supabase admin:', e);
+    } finally {
+      setAdminAuthenticated(false);
+      setAdminAuthChecking(false);
+      setIsAdminMode(false);
+    }
+  };
+
   if (loading) {
     return (
       <div id="boot-loader" className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center gap-4">
@@ -307,7 +320,7 @@ export default function App() {
               <AdminPanel
                 products={products}
                 settings={settings}
-                onExitAdmin={() => setIsAdminMode(false)}
+                onExitAdmin={handleAdminLogout}
               />
             </motion.div>
           )}

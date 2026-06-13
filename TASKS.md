@@ -363,6 +363,7 @@ Entregas concluídas:
 - Retorno pós-OAuth corrigido para abrir painel admin sem segundo clique.
 - PIN legado desabilitado como liberador de acesso admin nesta fase.
 - Usuário comum sem profile admin ativo bloqueado corretamente.
+- Logout admin encerra sessão Supabase e impede reabertura direta do painel.
 - Evidências sanitizadas registradas em docs/audits/fase-7-first-admin-access-validation.md.
 - lint/build locais aprovados.
 
