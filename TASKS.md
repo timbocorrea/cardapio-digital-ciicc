@@ -1,7 +1,7 @@
 # TASKS — MVP Cardapio Digital CIICC
 
 Data: 2026-06-12
-Status geral: FASE_6_DOCUMENTAL_CONCLUIDA_AGUARDANDO_MERGE
+Status geral: FASE_7_CONCLUIDA_TECNICAMENTE
 
 Este arquivo acompanha a execucao do projeto por fases. Deve ser atualizado a cada novo chat, branch ou PR.
 
@@ -302,12 +302,13 @@ Base segura: 00e746e
 
 ## FASE 6 — Aplicar e validar Supabase Profiles/RLS no ambiente real
 
-Status: CONCLUIDA_DOCUMENTALMENTE_AGUARDANDO_MERGE
+Status: CONCLUIDA_E_MERGEADA
 
 Base:
 - Fase 5 concluída e mergeada na main;
 - main sincronizada em d7a7654;
-- branch criada: feat/fase-6-apply-validate-supabase-profiles-rls.
+- branch criada: feat/fase-6-apply-validate-supabase-profiles-rls;
+- PR #7 mergeada em 630a364.
 
 Concluído:
 - gate pós-Fase 5 executado;
@@ -324,9 +325,10 @@ Concluído:
 - validação final npm run lint registrada como OK;
 - validação final npm run build registrada como OK;
 - PR #7 aberta;
-- PR #7 validada no gate final.
+- PR #7 validada no gate final;
+- PR #7 mergeada.
 
-Pendente para próxima fase:
+Pendente transferido para Fase 7:
 - criar/validar primeiro admin manualmente sem versionar dados reais;
 - testar login Google admin;
 - testar bloqueio de usuário comum.
@@ -343,3 +345,38 @@ Fora de escopo mantido:
 - dashboard operacional;
 - fechamento diário;
 - remoção total do Firebase.
+
+## Fase 7A — Validar primeiro admin Supabase real
+
+Status: CONCLUIDA_TECNICAMENTE
+
+Branch: feat/fase-7-validate-first-admin-access
+
+Base segura:
+- main pós-PR #7: 630a364
+
+Entregas concluídas:
+- Primeiro usuário admin criado no Supabase Auth via Google.
+- Primeiro profile admin criado/validado manualmente em public.profiles.
+- Validação de role=admin/status=active concluída.
+- Login Google admin validado.
+- Retorno pós-OAuth corrigido para abrir painel admin sem segundo clique.
+- PIN legado desabilitado como liberador de acesso admin nesta fase.
+- Usuário comum sem profile admin ativo bloqueado corretamente.
+- Logout admin encerra sessão Supabase e impede reabertura direta do painel.
+- Evidências sanitizadas registradas em docs/audits/fase-7-first-admin-access-validation.md.
+- lint/build locais aprovados.
+
+Fora de escopo mantido:
+- vendas;
+- estoque;
+- carrinho;
+- checkout;
+- pagamentos;
+- comprovantes;
+- Storage;
+- PWA/offline real;
+- dashboard operacional;
+- fechamento diário;
+- remoção Firebase.
+
