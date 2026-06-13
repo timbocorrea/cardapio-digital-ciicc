@@ -1,12 +1,5 @@
-import { useState, useEffect } from 'react';
-import {
-  subscribeProducts,
-  subscribeStoreSettings,
-  seedInitialDataIfNeeded,
-  DEFAULT_SETTINGS,
-  CustomerRegistration
-} from './dbService';
-import { auth } from './firebase';
+import { useState, useEffect, useCallback } from 'react';
+import { DEFAULT_SETTINGS } from './constants/defaults';
 import {
   getCurrentSession,
   onSupabaseAuthStateChange,
@@ -17,7 +10,11 @@ import {
   getProfileByAuthUserId,
   isActiveAdminProfile,
 } from './features/auth/supabaseProfileService';
-import { Product, StoreSetting } from './types';
+import {
+  getSupabaseStoreSettings,
+  listSupabaseProducts,
+} from './features/supabase/supabaseCoreDataService';
+import type { CustomerRegistration, Product, StoreSetting } from './types';
 import CustomerView from './components/CustomerView';
 import AdminLogin from './components/AdminLogin';
 import AdminPanel from './components/AdminPanel';
@@ -43,6 +40,16 @@ export default function App() {
   // Live QR Scanner state
   const [isScannerOpen, setIsScannerOpen] = useState(false);
 
+  const refreshCoreData = useCallback(async () => {
+    const [newSettings, newProducts] = await Promise.all([
+      getSupabaseStoreSettings(),
+      listSupabaseProducts(),
+    ]);
+
+    setSettings(newSettings);
+    setProducts(newProducts);
+  }, []);
+
   // Boot & URL Parser
   useEffect(() => {
     // 1. Detect Table Code inside URL query params (e.g. ?mesa=04 or ?table=04)
@@ -52,40 +59,17 @@ export default function App() {
       setCurrentTable(tableParam);
     }
 
-    // 2. Clear out seed and populate initial demo products if collection is empty
-    // (Now handled securely when an administrator is authenticated below to prevent permissions errors)
-
-    // 3. Connect real-time subscribe snapshots to cloud Firestore
-    const unsubscribeSettings = subscribeStoreSettings(
-      (newSettings) => {
-        setSettings(newSettings);
+    // 2. Load products/settings from Supabase.
+    refreshCoreData()
+      .catch((err) => {
+        console.error('Falha ao carregar dados do Supabase:', err);
+      })
+      .finally(() => {
         setLoading(false);
-      },
-      (err) => {
-        console.error('Falha ao sincronizar dados de settings:', err);
-        setLoading(false);
-      }
-    );
+      });
 
-    const unsubscribeProducts = subscribeProducts(
-      (newProducts) => {
-        setProducts(newProducts);
-      },
-      (err) => {
-        console.error('Falha ao sincronizar lista de produtos:', err);
-      }
-    );
+    // 3. Trace Supabase Auth session and authorize admin access by Supabase profile role
 
-    // 4. Trace if there is a persistent Firebase Google login credentials
-    const unsubscribeAuth = auth.onAuthStateChanged((user) => {
-      if (user && user.emailVerified) {
-        setAdminAuthenticated(true);
-        // Seed initial products/settings securely on verified administrative connection
-        seedInitialDataIfNeeded().catch((e) => console.log('Erro ao semear dados iniciais:', e));
-      }
-    });
-
-    // 5. Trace Supabase Auth session and authorize admin access by Supabase profile role
     const handleSupabaseSession = async (session: AuthSession | null) => {
       setAdminAuthChecking(true);
 
@@ -125,12 +109,9 @@ export default function App() {
     });
 
     return () => {
-      unsubscribeSettings();
-      unsubscribeProducts();
-      unsubscribeAuth();
       unsubscribeSupabaseAuth();
     };
-  }, []);
+  }, [refreshCoreData]);
 
   const handleQRScanSuccess = (decodedText: string) => {
     try {
@@ -167,7 +148,7 @@ export default function App() {
 
   const handleCustomerLogout = async () => {
     try {
-      await auth.signOut();
+      await signOutFromSupabase();
       setCustomerProfile(null);
     } catch (e) {
       console.error("Erro ao deslogar cliente:", e);
@@ -321,6 +302,7 @@ export default function App() {
                 products={products}
                 settings={settings}
                 onExitAdmin={handleAdminLogout}
+                onCoreDataChanged={refreshCoreData}
               />
             </motion.div>
           )}
@@ -334,7 +316,7 @@ export default function App() {
             {settings.storeName || 'Cardápio Digital'} • Todos os direitos reservados.
           </p>
           <p className="text-[10px] font-light">
-            Desenvolvido com tecnologia segura de persistência na nuvem Firebase Firestore.
+            Desenvolvido com tecnologia segura de persistência na nuvem Supabase.
           </p>
         </div>
       </footer>

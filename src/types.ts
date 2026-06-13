@@ -18,37 +18,12 @@ export interface Product {
   createdAt?: string;
 }
 
-export interface ProductBatch {
-  id: string;
-  productId: string;
-  productName: string;
-  batchDate: string; // e.g. YYYY-MM-DD
-  initialQuantity: number; 
+export interface CustomerRegistration {
+  uid: string;
+  name: string;
+  email: string;
+  workplace: string;
+  shiftHours: string;
+  photoUrl: string;
   createdAt: string;
-}
-
-export enum OperationType {
-  CREATE = 'create',
-  UPDATE = 'update',
-  DELETE = 'delete',
-  LIST = 'list',
-  GET = 'get',
-  WRITE = 'write',
-}
-
-export interface FirestoreErrorInfo {
-  error: string;
-  operationType: OperationType;
-  path: string | null;
-  authInfo: {
-    userId?: string | null;
-    email?: string | null;
-    emailVerified?: boolean | null;
-    isAnonymous?: boolean | null;
-    tenantId?: string | null;
-    providerInfo?: {
-      providerId?: string | null;
-      email?: string | null;
-    }[];
-  };
 }

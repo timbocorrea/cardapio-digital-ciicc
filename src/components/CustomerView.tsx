@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Product, StoreSetting } from '../types';
-import { createSale } from '../dbService';
+import { createSupabaseSale, type SupabaseCustomerProfile } from '../features/supabase/supabaseCoreDataService';
 
 interface CustomerViewProps {
   products: Product[];
@@ -166,16 +166,33 @@ export default function CustomerView({
         };
       });
 
-      const saleId = await createSale({
-        customerId: customerProfile?.uid || 'anonymous',
-        customerName: customerProfile?.name || 'Cliente',
-        customerEmail: customerProfile?.email || '',
-        customerWorkplace: customerProfile?.workplace || '',
-        customerShiftHours: customerProfile?.shiftHours || '',
-        customerPhotoUrl: customerProfile?.photoUrl || '',
-        items: saleItems,
+      if (!customerProfile?.uid) {
+        throw new Error('Cliente Supabase não autenticado.');
+      }
+
+      const supabaseCustomerProfile: SupabaseCustomerProfile = {
+        id: customerProfile.uid,
+        authUserId: customerProfile.uid,
+        email: customerProfile.email || '',
+        displayName: customerProfile.name || 'Cliente',
+        workplace: customerProfile.workplace || '',
+        shiftHours: customerProfile.shiftHours || '',
+        photoUrl: customerProfile.photoUrl || '',
+        role: 'customer',
+        status: 'active',
+      };
+
+      const saleId = await createSupabaseSale({
+        customerProfile: supabaseCustomerProfile,
+        items: saleItems.map((item) => ({
+          productId: item.productId || null,
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+          emoji: item.emoji,
+        })),
         totalAmount: cartTotal,
-        paymentMethod: selectedPaymentMethod
+        paymentMethod: selectedPaymentMethod,
       });
 
       setCheckedOutSaleId(saleId);
