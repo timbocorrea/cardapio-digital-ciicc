@@ -10,7 +10,7 @@ import {
   getCustomerProfileByAuthUserId,
   upsertCustomerProfile,
 } from '../features/supabase/supabaseCoreDataService';
-import type { CustomerRegistration } from '../dbService';
+import type { CustomerRegistration } from '../types';
 import { Camera, User, Briefcase, Clock, Sparkles, LogIn, RefreshCw, Check, AlertCircle, HelpCircle, Upload, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 

@@ -1,8 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import {
-  DEFAULT_SETTINGS,
-  CustomerRegistration
-} from './dbService';
+import { DEFAULT_SETTINGS } from './constants/defaults';
 import {
   getCurrentSession,
   onSupabaseAuthStateChange,
@@ -17,7 +14,7 @@ import {
   getSupabaseStoreSettings,
   listSupabaseProducts,
 } from './features/supabase/supabaseCoreDataService';
-import { Product, StoreSetting } from './types';
+import type { CustomerRegistration, Product, StoreSetting } from './types';
 import CustomerView from './components/CustomerView';
 import AdminLogin from './components/AdminLogin';
 import AdminPanel from './components/AdminPanel';

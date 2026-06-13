@@ -149,7 +149,7 @@ export default function AdminLogin({ onLoginSuccess, onBack }: AdminLoginProps) 
 
           <p className="text-zinc-400 text-[11px] text-center px-4 leading-relaxed">
             {supabaseAuthReady
-              ? 'O login Google será iniciado pelo Supabase Auth. O Firebase legado permanece ativo apenas para compatibilidade durante a validação.'
+              ? 'O login Google será iniciado pelo Supabase Auth. A autorização administrativa depende de um profile admin ativo no Supabase.'
               : 'Configure VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY em .env.local para habilitar o login Google via Supabase Auth.'}
           </p>
 
