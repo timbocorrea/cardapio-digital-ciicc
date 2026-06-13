@@ -3,7 +3,6 @@ import {
   DEFAULT_SETTINGS,
   CustomerRegistration
 } from './dbService';
-import { auth } from './firebase';
 import {
   getCurrentSession,
   onSupabaseAuthStateChange,
@@ -149,7 +148,7 @@ export default function App() {
 
   const handleCustomerLogout = async () => {
     try {
-      await auth.signOut();
+      await signOutFromSupabase();
       setCustomerProfile(null);
     } catch (e) {
       console.error("Erro ao deslogar cliente:", e);
