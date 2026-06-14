@@ -131,14 +131,69 @@ export default function CustomerView({
 
   // WhatsApp click generator
 
+  const resolveSupabaseErrorMessage = (error: unknown): string => {
+    if (error instanceof Error) return error.message;
+
+    if (error && typeof error === 'object') {
+      const record = error as { code?: string; message?: string; details?: string; hint?: string };
+      const parts = [record.code, record.message, record.details, record.hint].filter(Boolean);
+
+      if (parts.length > 0) {
+        return parts.join(' | ');
+      }
+
+      try {
+        return JSON.stringify(error);
+      } catch {
+        return 'Erro desconhecido.';
+      }
+    }
+
+    return String(error || 'Erro desconhecido.');
+  };
+
+  const uploadPaymentProofFile = async (file: File): Promise<string> => {
+    if (!supabase) {
+      throw new Error('Supabase indisponível para enviar o comprovante. Verifique a configuração do ambiente.');
+    }
+
+    const rawExtension = file.name.split('.').pop() || 'jpg';
+    const extension = rawExtension.replace(/[^a-zA-Z0-9]/g, '').toLowerCase() || 'jpg';
+    const customerKey = String(
+      (customerProfile as { id?: string; uid?: string; authUserId?: string })?.id ||
+      (customerProfile as { id?: string; uid?: string; authUserId?: string })?.uid ||
+      (customerProfile as { id?: string; uid?: string; authUserId?: string })?.authUserId ||
+      'cliente'
+    ).replace(/[^a-zA-Z0-9_-]/g, '-');
+
+    const proofPath = `${customerKey}/${Date.now()}-${Math.random().toString(36).slice(2)}.${extension}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('payment-proofs')
+      .upload(proofPath, file, {
+        cacheControl: '3600',
+        upsert: false,
+        contentType: file.type || 'application/octet-stream',
+      });
+
+    if (uploadError) {
+      throw uploadError;
+    }
+
+    const { data: publicUrlData } = supabase.storage
+      .from('payment-proofs')
+      .getPublicUrl(proofPath);
+
+    if (!publicUrlData?.publicUrl) {
+      throw new Error('Upload concluído, mas o link público do comprovante não foi gerado.');
+    }
+
+    return publicUrlData.publicUrl;
+  };
+
   const handleUploadPaymentProof = async () => {
     if (!paymentProofFile) {
       setOrderError('Selecione o comprovante antes de confirmar o anexo.');
-      return;
-    }
-
-    if (!supabase) {
-      setOrderError('Supabase indisponível para enviar o comprovante. Verifique a configuração do ambiente.');
       return;
     }
 
@@ -146,41 +201,11 @@ export default function CustomerView({
     setOrderError(null);
 
     try {
-      const rawExtension = paymentProofFile.name.split('.').pop() || 'jpg';
-      const extension = rawExtension.replace(/[^a-zA-Z0-9]/g, '').toLowerCase() || 'jpg';
-      const customerKey = String(
-        (customerProfile as { id?: string; uid?: string; authUserId?: string })?.id ||
-        (customerProfile as { id?: string; uid?: string; authUserId?: string })?.uid ||
-        (customerProfile as { id?: string; uid?: string; authUserId?: string })?.authUserId ||
-        'cliente'
-      ).replace(/[^a-zA-Z0-9_-]/g, '-');
-
-      const proofPath = `${customerKey}/${Date.now()}-${Math.random().toString(36).slice(2)}.${extension}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('payment-proofs')
-        .upload(proofPath, paymentProofFile, {
-          cacheControl: '3600',
-          upsert: false,
-          contentType: paymentProofFile.type || 'application/octet-stream',
-        });
-
-      if (uploadError) {
-        throw uploadError;
-      }
-
-      const { data: publicUrlData } = supabase.storage
-        .from('payment-proofs')
-        .getPublicUrl(proofPath);
-
-      if (!publicUrlData?.publicUrl) {
-        throw new Error('Upload concluído, mas o link público do comprovante não foi gerado.');
-      }
-
-      setPaymentProofUrl(publicUrlData.publicUrl);
+      const publicUrl = await uploadPaymentProofFile(paymentProofFile);
+      setPaymentProofUrl(publicUrl);
       setOrderError(null);
     } catch (e) {
-      const message = e instanceof Error ? e.message : JSON.stringify(e);
+      const message = resolveSupabaseErrorMessage(e);
       console.error('Erro ao enviar comprovante:', e);
       setPaymentProofUrl(null);
       setOrderError(`Não foi possível enviar o comprovante. Detalhe técnico: ${message}`);
@@ -224,9 +249,24 @@ export default function CustomerView({
       return;
     }
 
-    if (selectedPaymentMethod === 'pix' && !paymentProofUrl) {
-      setOrderError('Confirme o anexo para enviar o comprovante ao sistema antes de notificar.');
-      return;
+    let confirmedPaymentProofUrl = paymentProofUrl;
+
+    if (selectedPaymentMethod === 'pix' && !confirmedPaymentProofUrl) {
+      setIsUploadingPaymentProof(true);
+      setOrderError(null);
+
+      try {
+        confirmedPaymentProofUrl = await uploadPaymentProofFile(paymentProofFile);
+        setPaymentProofUrl(confirmedPaymentProofUrl);
+      } catch (e) {
+        const message = resolveSupabaseErrorMessage(e);
+        console.error('Erro ao enviar comprovante antes de registrar aquisição:', e);
+        setOrderError(`Não foi possível enviar o comprovante PIX. Detalhe técnico: ${message}`);
+        setIsUploadingPaymentProof(false);
+        return;
+      }
+
+      setIsUploadingPaymentProof(false);
     }
 
     setIsSubmittingOrder(true);
@@ -301,7 +341,7 @@ export default function CustomerView({
         : 'PAGAMENTO À VISTA VIA PIX ✅';
 
       const proofSection = selectedPaymentMethod === 'pix'
-        ? `\n*Comprovante:* clique no link para ver o comprovante:\n${paymentProofUrl || 'Link do comprovante não gerado'}`
+        ? `\n*Comprovante:* clique no link para ver o comprovante:\n${confirmedPaymentProofUrl || 'Link do comprovante não gerado'}`
         : '';
 
       const baseMsg = `Olá! Sou *${customerProfile?.name || 'Cliente'}* (${customerProfile?.workplace || 'Sem Setor'}). Estou notificando uma aquisição realizada na loja física do CIICC.\n\n${itemsList}\n\n*Total:* R$ ${cartTotal.toFixed(2)}\n*Forma de pagamento:* ${methodLabel}${proofSection}`;
@@ -319,7 +359,7 @@ export default function CustomerView({
 
 
     } catch (e) {
-      const message = e instanceof Error ? e.message : 'Erro desconhecido ao registrar aquisição.';
+      const message = resolveSupabaseErrorMessage(e);
       console.error('Erro ao processar aquisição:', e);
       setOrderError(`Não foi possível registrar sua aquisição no banco de dados. Sua aquisição ainda não apareceu no painel administrativo. Detalhe técnico: ${message}`);
     } finally {
@@ -987,15 +1027,15 @@ export default function CustomerView({
                 </button>
                 <button
                   type="button"
-                  disabled={!selectedPaymentMethod || isSubmittingOrder}
+                  disabled={!selectedPaymentMethod || isSubmittingOrder || isUploadingPaymentProof}
                   onClick={handleConfirmPurchase}
                   className={`flex-1 py-3 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 cursor-pointer ${
-                    !selectedPaymentMethod || isSubmittingOrder
+                    !selectedPaymentMethod || isSubmittingOrder || isUploadingPaymentProof
                       ? 'bg-zinc-300 cursor-not-allowed text-zinc-500 animate-pulse'
                       : 'bg-amber-500 hover:bg-amber-600'
                   }`}
                 >
-                  {isSubmittingOrder ? 'Processando...' : 'Confirmar e notificar'}
+                  {isSubmittingOrder ? 'Processando...' : isUploadingPaymentProof ? 'Enviando comprovante...' : 'Confirmar e notificar'}
                 </button>
               </div>
             </motion.div>

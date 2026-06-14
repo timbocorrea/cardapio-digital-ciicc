@@ -50,6 +50,7 @@ export default function CustomerRegistrationGate({ onAccessGranted, onAdminAcces
 
         if (existingProfile?.status === 'active') {
           onAccessGranted({
+            id: existingProfile.id,
             uid: existingProfile.authUserId,
             name: existingProfile.displayName,
             email: existingProfile.email,
@@ -140,7 +141,7 @@ export default function CustomerRegistrationGate({ onAccessGranted, onAdminAcces
         photoUrl: photoBase64,
       };
 
-      await upsertCustomerProfile({
+      const savedProfile = await upsertCustomerProfile({
         authUserId: registrationData.uid,
         email: registrationData.email,
         displayName: registrationData.name,
@@ -150,8 +151,9 @@ export default function CustomerRegistrationGate({ onAccessGranted, onAdminAcces
       });
 
       onAccessGranted({
+        id: savedProfile.id,
         ...registrationData,
-        createdAt: new Date().toISOString(),
+        createdAt: savedProfile.createdAt || new Date().toISOString(),
       });
     } catch (err) {
       console.error('Erro ao salvar cadastro do cliente Supabase:', err);
