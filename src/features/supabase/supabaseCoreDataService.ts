@@ -20,6 +20,7 @@ export interface SupabaseSale {
   customerPhotoUrl: string;
   totalAmount: number;
   paymentMethod: 'later' | 'pix';
+  paymentProofUrl: string | null;
   createdAt: string;
   items: SupabaseSaleItem[];
 }
@@ -52,6 +53,7 @@ export type SupabaseSaleInput = {
   items: SupabaseSaleItemInput[];
   totalAmount: number;
   paymentMethod: 'later' | 'pix';
+  paymentProofUrl?: string | null;
 };
 
 type ProductRow = {
@@ -84,6 +86,7 @@ type SaleRow = {
   customer_photo_url: string;
   total_amount: number;
   payment_method: 'later' | 'pix';
+  payment_proof_url: string | null;
   created_at: string;
 };
 
@@ -164,6 +167,7 @@ function mapSale(row: SaleRow, items: SaleItemRow[] = []): SupabaseSale {
     customerPhotoUrl: row.customer_photo_url,
     totalAmount: row.total_amount,
     paymentMethod: row.payment_method,
+    paymentProofUrl: row.payment_proof_url || null,
     createdAt: row.created_at,
     items: items.map((item) => ({
       id: item.id,
@@ -289,6 +293,7 @@ export async function createSupabaseSale(input: SupabaseSaleInput): Promise<stri
       customer_photo_url: input.customerProfile.photoUrl,
       total_amount: input.totalAmount,
       payment_method: input.paymentMethod,
+      payment_proof_url: input.paymentProofUrl || null,
     })
     .select('id')
     .single<{ id: string }>();
