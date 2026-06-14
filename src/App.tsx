@@ -19,7 +19,6 @@ import CustomerView from './components/CustomerView';
 import AdminLogin from './components/AdminLogin';
 import AdminPanel from './components/AdminPanel';
 import CustomerRegistrationGate from './components/CustomerRegistrationGate';
-import QRScannerModal from './components/QRScannerModal';
 import { LogIn, ShoppingBag, Landmark, Settings, Flame } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -35,10 +34,7 @@ export default function App() {
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [adminAuthenticated, setAdminAuthenticated] = useState(false);
   const [adminAuthChecking, setAdminAuthChecking] = useState(true);
-  const [currentTable, setCurrentTable] = useState<string | null>(null);
 
-  // Live QR Scanner state
-  const [isScannerOpen, setIsScannerOpen] = useState(false);
 
   const refreshCoreData = useCallback(async () => {
     const [newSettings, newProducts] = await Promise.all([
@@ -52,14 +48,7 @@ export default function App() {
 
   // Boot & URL Parser
   useEffect(() => {
-    // 1. Detect Table Code inside URL query params (e.g. ?mesa=04 or ?table=04)
-    const searchParams = new URL(window.location.href).searchParams;
-    const tableParam = searchParams.get('mesa') || searchParams.get('table');
-    if (tableParam) {
-      setCurrentTable(tableParam);
-    }
-
-    // 2. Load products/settings from Supabase.
+    // Load products/settings from Supabase.
     refreshCoreData()
       .catch((err) => {
         console.error('Falha ao carregar dados do Supabase:', err);
@@ -113,39 +102,6 @@ export default function App() {
     };
   }, [refreshCoreData]);
 
-  const handleQRScanSuccess = (decodedText: string) => {
-    try {
-      // Decode scanned contents. If it is a URL, parse its params
-      if (decodedText.includes('?')) {
-        const decodedUrl = new URL(decodedText, window.location.origin);
-        const table = decodedUrl.searchParams.get('mesa') || decodedUrl.searchParams.get('table');
-        if (table) {
-          setCurrentTable(table);
-          // Set new query parameter on history
-          const newUrl = `${window.location.pathname}?mesa=${table}`;
-          window.history.replaceState({}, '', newUrl);
-          return;
-        }
-      }
-
-      // If it's just a raw code or number, set it directly!
-      if (decodedText.trim().length > 0) {
-        setCurrentTable(decodedText.trim());
-        const newUrl = `${window.location.pathname}?mesa=${decodedText.trim()}`;
-        window.history.replaceState({}, '', newUrl);
-      }
-    } catch (e) {
-      // Safe fallback if scanned standard item
-      setCurrentTable(decodedText);
-    }
-  };
-
-  const handleTableChange = (table: string | null) => {
-    setCurrentTable(table);
-    const newUrl = table ? `${window.location.pathname}?mesa=${table}` : window.location.pathname;
-    window.history.replaceState({}, '', newUrl);
-  };
-
   const handleCustomerLogout = async () => {
     try {
       await signOutFromSupabase();
@@ -180,7 +136,7 @@ export default function App() {
     <div className="min-h-screen bg-zinc-50 font-sans text-zinc-800 antialiased selection:bg-amber-100 selection:text-amber-900">
       
       {/* Absolute Header Ribbon Controller */}
-      {(!isAdminMode && !customerProfile) ? null : (
+      {adminAuthenticated ? (
         <header className="sticky top-0 z-40 bg-white/85 backdrop-blur-md border-b border-zinc-150 py-3.5 px-4 shadow-2xs">
           <div className="max-w-4xl mx-auto flex items-center justify-between">
             <button
@@ -226,7 +182,7 @@ export default function App() {
             </div>
           </div>
         </header>
-      )}
+      ) : null}
 
       {/* Primary Display Layout with AnimatePresence */}
       <main className="min-h-[85vh]">
@@ -256,9 +212,6 @@ export default function App() {
                 <CustomerView
                   products={products}
                   settings={settings}
-                  currentTable={currentTable}
-                  onTableChange={handleTableChange}
-                  onOpenScanner={() => setIsScannerOpen(true)}
                   customerProfile={customerProfile}
                   onLogout={handleCustomerLogout}
                 />
@@ -321,12 +274,6 @@ export default function App() {
         </div>
       </footer>
 
-      {/* Global Device QR Camera Scanner Modal popup */}
-      <QRScannerModal
-        isOpen={isScannerOpen}
-        onClose={() => setIsScannerOpen(false)}
-        onScanSuccess={handleQRScanSuccess}
-      />
     </div>
   );
 }

@@ -15,6 +15,7 @@ import {
   DollarSign,
   X,
   Clock,
+  AlertCircle,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Product, StoreSetting } from '../types';
@@ -57,6 +58,7 @@ export default function AdminPanel({ products, settings, onExitAdmin, onCoreData
 
   // Active Tab: 'products' | 'settings' | 'qrcode' | 'sales' | 'batches'
   const [activeTab, setActiveTab] = useState<'products' | 'settings' | 'qrcode' | 'sales' | 'batches'>('products');
+  const [adminNotice, setAdminNotice] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
 
   // Sales list track state
   const [sales, setSales] = useState<SupabaseSale[]>([]);
@@ -84,6 +86,11 @@ export default function AdminPanel({ products, settings, onExitAdmin, onCoreData
   const qrBaseUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&color=d97706&data=`;
   const customerLink = `${currentAppUrl}?mesa=${qrTableNumber}`;
   const qrCodeUrl = `${qrBaseUrl}${encodeURIComponent(customerLink)}`;
+
+  const showAdminNotice = useCallback((type: 'success' | 'error' | 'info', message: string) => {
+    setAdminNotice({ type, message });
+    window.setTimeout(() => setAdminNotice(null), 4500);
+  }, []);
 
   // Sync settings state when prop resolves
   useEffect(() => {
@@ -137,10 +144,11 @@ export default function AdminPanel({ products, settings, onExitAdmin, onCoreData
       await saveSupabaseStoreSettings(cleanSettings);
       await notifyCoreDataChanged();
       setSettingsSaved(true);
+      showAdminNotice('success', 'Configurações salvas no Supabase com sucesso.');
       setTimeout(() => setSettingsSaved(false), 3000);
     } catch (err) {
       console.error('Falha ao salvar configurações:', err);
-      alert('Falha ao gravar no Supabase. Verifique sua sessão e permissão administrativa.');
+      showAdminNotice('error', 'Falha ao gravar no Supabase. Verifique sua sessão e permissão administrativa.');
     } finally {
       setSettingsLoading(false);
     }
@@ -150,9 +158,10 @@ export default function AdminPanel({ products, settings, onExitAdmin, onCoreData
     try {
       await updateSupabaseProduct(product.id, { available: !product.available });
       await notifyCoreDataChanged();
+      showAdminNotice('success', product.available ? 'Produto removido da oferta do cardápio.' : 'Produto marcado como disponível no cardápio.');
     } catch (err) {
       console.error('Falha ao alternar disponibilidade:', err);
-      alert('Sem permissão de gravação no Supabase. Verifique sua sessão administrativa.');
+      showAdminNotice('error', 'Sem permissão de gravação no Supabase. Verifique sua sessão administrativa.');
     }
   };
 
@@ -185,9 +194,10 @@ export default function AdminPanel({ products, settings, onExitAdmin, onCoreData
       try {
         await deleteSupabaseProduct(id);
         await notifyCoreDataChanged();
+        showAdminNotice('success', 'Produto excluído do cardápio com sucesso.');
       } catch (err) {
         console.error('Falha ao deletar produto:', err);
-        alert('Erro ao excluir produto. Verifique sua permissão administrativa no Supabase.');
+        showAdminNotice('error', 'Erro ao excluir produto. Verifique sua permissão administrativa no Supabase.');
       }
     }
   };
@@ -195,13 +205,13 @@ export default function AdminPanel({ products, settings, onExitAdmin, onCoreData
   const handleProductFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formName.trim() || !formPrice.trim()) {
-      alert('Nome e Preço são obrigatórios!');
+      showAdminNotice('error', 'Nome e preço são obrigatórios para salvar o produto.');
       return;
     }
 
     const priceNum = parseFloat(formPrice.replace(',', '.'));
     if (isNaN(priceNum) || priceNum < 0) {
-      alert('Por favor, insira um preço válido maior ou igual a zero.');
+      showAdminNotice('error', 'Insira um preço válido maior ou igual a zero.');
       return;
     }
 
@@ -225,16 +235,17 @@ export default function AdminPanel({ products, settings, onExitAdmin, onCoreData
 
       await notifyCoreDataChanged();
       setIsProductModalOpen(false);
+      showAdminNotice('success', editingProduct ? 'Produto atualizado com sucesso.' : 'Produto cadastrado com sucesso.');
     } catch (err) {
       console.error('Erro ao salvar produto:', err);
-      alert('Falha ao salvar produto no Supabase. Verifique sua sessão e permissão administrativa.');
+      showAdminNotice('error', 'Falha ao salvar produto no Supabase. Verifique sua sessão e permissão administrativa.');
     } finally {
       setProductSubmitLoading(false);
     }
   };
 
   const handleGenerateSeed = () => {
-    alert('Seed manual removido na migração Supabase-only. Cadastre produtos manualmente no painel administrativo.');
+    showAdminNotice('info', 'Seed manual removido na migração Supabase-only. Cadastre produtos manualmente no painel administrativo.');
   };
 
   const handleCopyLink = () => {
@@ -286,6 +297,25 @@ export default function AdminPanel({ products, settings, onExitAdmin, onCoreData
           </button>
         </div>
       </div>
+
+      {adminNotice && (
+        <div className={`mb-5 rounded-2xl border px-4 py-3 text-xs font-semibold flex items-start gap-2 ${
+          adminNotice.type === 'success'
+            ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+            : adminNotice.type === 'error'
+              ? 'border-rose-200 bg-rose-50 text-rose-700'
+              : 'border-amber-200 bg-amber-50 text-amber-700'
+        }`}>
+          {adminNotice.type === 'success' ? (
+            <Check className="w-4 h-4 shrink-0 mt-0.5" />
+          ) : adminNotice.type === 'error' ? (
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+          ) : (
+            <Clock className="w-4 h-4 shrink-0 mt-0.5" />
+          )}
+          <span>{adminNotice.message}</span>
+        </div>
+      )}
 
       {/* Tabs list bar */}
       <div className="flex border-b border-zinc-150 mb-7">
@@ -839,9 +869,10 @@ export default function AdminPanel({ products, settings, onExitAdmin, onCoreData
                                     try {
                                       await deleteSupabaseSale(sale.id);
                                       await loadSales();
+                                      showAdminNotice('success', 'Comanda baixada/removida da lista.');
                                     } catch (err) {
                                       console.error('Erro ao excluir venda no Supabase:', err);
-                                      alert('Houve um erro ao excluir o registro.');
+                                      showAdminNotice('error', 'Houve um erro ao excluir o registro. Verifique sua sessão administrativa.');
                                     }
                                   }
                                 }}

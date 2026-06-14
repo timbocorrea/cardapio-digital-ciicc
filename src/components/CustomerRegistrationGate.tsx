@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   getCurrentSession,
   onSupabaseAuthStateChange,
@@ -11,7 +11,7 @@ import {
   upsertCustomerProfile,
 } from '../features/supabase/supabaseCoreDataService';
 import type { CustomerRegistration } from '../types';
-import { Camera, User, Briefcase, Clock, Sparkles, LogIn, RefreshCw, Check, AlertCircle, HelpCircle, Upload, Settings } from 'lucide-react';
+import { User, Briefcase, Clock, Sparkles, LogIn, RefreshCw, Check, AlertCircle, HelpCircle, Upload, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface CustomerRegistrationGateProps {
@@ -23,30 +23,15 @@ export default function CustomerRegistrationGate({ onAccessGranted, onAdminAcces
   const [session, setSession] = useState<AuthSession | null>(null);
   const [loading, setLoading] = useState(true);
   const [checkingRegistration, setCheckingRegistration] = useState(false);
+  const [registrationError, setRegistrationError] = useState<string | null>(null);
 
   const [name, setName] = useState('');
   const [workplace, setWorkplace] = useState('');
   const [shiftHours, setShiftHours] = useState('');
   const [photoBase64, setPhotoBase64] = useState<string | null>(null);
 
-  const [cameraActive, setCameraActive] = useState(false);
-  const [cameraError, setCameraError] = useState<string | null>(null);
-  const [cameraLoading, setCameraLoading] = useState(false);
 
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const streamRef = useRef<MediaStream | null>(null);
 
-  const stopCamera = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
-    }
-    if (videoRef.current) {
-      videoRef.current.srcObject = null;
-    }
-    setCameraActive(false);
-  };
 
   useEffect(() => {
     const handleSession = async (currentSession: AuthSession | null) => {
@@ -95,7 +80,6 @@ export default function CustomerRegistrationGate({ onAccessGranted, onAdminAcces
 
     return () => {
       unsubscribe();
-      stopCamera();
     };
   }, [onAccessGranted]);
 
@@ -109,64 +93,8 @@ export default function CustomerRegistrationGate({ onAccessGranted, onAdminAcces
     }
   };
 
-  const startCamera = async () => {
-    setCameraError(null);
-    setCameraLoading(true);
-    setCameraActive(true);
-
-    if (streamRef.current) {
-      stopCamera();
-    }
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: 'user',
-          width: { ideal: 640 },
-          height: { ideal: 480 },
-        },
-        audio: false,
-      });
-
-      streamRef.current = stream;
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.setAttribute('playsinline', 'true');
-        videoRef.current.play().catch((e) => console.log('Video play error:', e));
-      }
-    } catch (err) {
-      console.error('Erro ao acessar câmera:', err);
-      setCameraError(
-        'Não foi possível acessar a câmera do dispositivo. Por favor, conceda permissão de câmera para continuar.',
-      );
-      setCameraActive(false);
-    } finally {
-      setCameraLoading(false);
-    }
-  };
-
-  const capturePhoto = () => {
-    if (videoRef.current && canvasRef.current) {
-      const video = videoRef.current;
-      const canvas = canvasRef.current;
-      const context = canvas.getContext('2d');
-
-      if (context) {
-        canvas.width = 400;
-        canvas.height = 300;
-        context.drawImage(video, 0, 0, 400, 300);
-
-        const base64Data = canvas.toDataURL('image/jpeg', 0.75);
-        setPhotoBase64(base64Data);
-        stopCamera();
-      }
-    }
-  };
-
   const retakePhoto = () => {
     setPhotoBase64(null);
-    startCamera();
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -174,7 +102,7 @@ export default function CustomerRegistrationGate({ onAccessGranted, onAdminAcces
 
     if (file) {
       if (file.size > 1000000) {
-        setCameraError('A imagem selecionada é muito grande. Escolha uma foto com menos de 1MB.');
+        setRegistrationError('A imagem selecionada é muito grande. Escolha uma foto com menos de 1MB.');
         return;
       }
 
@@ -183,8 +111,7 @@ export default function CustomerRegistrationGate({ onAccessGranted, onAdminAcces
       reader.onloadend = () => {
         if (typeof reader.result === 'string') {
           setPhotoBase64(reader.result);
-          setCameraError(null);
-          stopCamera();
+          setRegistrationError(null);
         }
       };
 
@@ -201,6 +128,7 @@ export default function CustomerRegistrationGate({ onAccessGranted, onAdminAcces
     }
 
     try {
+      setRegistrationError(null);
       setCheckingRegistration(true);
 
       const registrationData = {
@@ -227,7 +155,7 @@ export default function CustomerRegistrationGate({ onAccessGranted, onAdminAcces
       });
     } catch (err) {
       console.error('Erro ao salvar cadastro do cliente Supabase:', err);
-      alert('Falha ao salvar dados de acesso no banco de dados. Tente novamente.');
+      setRegistrationError('Não foi possível salvar seu cadastro agora. Confira a conexão e tente novamente.');
     } finally {
       setCheckingRegistration(false);
     }
@@ -346,13 +274,13 @@ export default function CustomerRegistrationGate({ onAccessGranted, onAdminAcces
 
               <div className="space-y-2">
                 <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider flex items-center gap-1.5">
-                  <Camera className="w-3.5 h-3.5" />
+                  <User className="w-3.5 h-3.5" />
                   Foto de identificação
                 </span>
 
                 {photoBase64 ? (
                   <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-3 flex items-center gap-3">
-                    <img src={photoBase64} alt="Foto capturada" className="w-16 h-16 rounded-xl object-cover border border-amber-500/20" />
+                    <img src={photoBase64} alt="Foto anexada" className="w-16 h-16 rounded-xl object-cover border border-amber-500/20" />
                     <div className="flex-1 text-left">
                       <p className="text-white text-xs font-bold">Foto anexada</p>
                       <p className="text-zinc-500 text-[10px]">Será usada apenas para identificação interna.</p>
@@ -367,56 +295,26 @@ export default function CustomerRegistrationGate({ onAccessGranted, onAdminAcces
                   </div>
                 ) : (
                   <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-3 space-y-3">
-                    {cameraActive && (
-                      <div className="relative rounded-xl overflow-hidden bg-black">
-                        <video ref={videoRef} className="w-full aspect-video object-cover" muted playsInline />
-                        <canvas ref={canvasRef} className="hidden" />
-                      </div>
-                    )}
-
-                    {cameraError && (
-                      <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 text-red-300 text-xs flex gap-2">
-                        <AlertCircle className="w-4 h-4 shrink-0" />
-                        <span>{cameraError}</span>
-                      </div>
-                    )}
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {!cameraActive ? (
-                        <button
-                          type="button"
-                          onClick={startCamera}
-                          disabled={cameraLoading}
-                          className="py-3 px-3 bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs rounded-xl cursor-pointer transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
-                        >
-                          <Camera className="w-4 h-4" />
-                          {cameraLoading ? 'Abrindo...' : 'Abrir câmera'}
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={capturePhoto}
-                          className="py-3 px-3 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs rounded-xl cursor-pointer transition-colors flex items-center justify-center gap-2"
-                        >
-                          <Check className="w-4 h-4" />
-                          Capturar foto
-                        </button>
-                      )}
-
-                      <label className="py-3 px-3 bg-zinc-800 hover:bg-zinc-750 text-zinc-200 font-bold text-xs rounded-xl cursor-pointer transition-colors flex items-center justify-center gap-2">
-                        <Upload className="w-4 h-4" />
-                        Enviar arquivo
-                        <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
-                      </label>
-                    </div>
+                    <label className="w-full py-3 px-3 bg-zinc-800 hover:bg-zinc-750 text-zinc-200 font-bold text-xs rounded-xl cursor-pointer transition-colors flex items-center justify-center gap-2">
+                      <Upload className="w-4 h-4" />
+                      Enviar foto
+                      <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
+                    </label>
 
                     <p className="text-zinc-500 text-[10px] leading-relaxed flex gap-1.5">
                       <HelpCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-                      A foto é necessária para identificação do colaborador no momento da retirada ou conferência.
+                      A foto é usada apenas para identificação interna no momento da retirada ou conferência.
                     </p>
                   </div>
                 )}
               </div>
+
+              {registrationError && (
+                <div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-xs font-semibold text-rose-200 flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>{registrationError}</span>
+                </div>
+              )}
 
               <div className="grid grid-cols-1 gap-2 pt-1">
                 <button
