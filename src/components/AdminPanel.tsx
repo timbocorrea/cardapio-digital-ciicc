@@ -850,14 +850,30 @@ export default function AdminPanel({ products, settings, onExitAdmin, onCoreData
                               {sale.paymentMethod === 'pix' ? (
                                 <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-500/10 text-emerald-600 border border-emerald-500/15 rounded-full text-[10px] font-bold">
                                   <Check className="w-3 h-3" />
-                                  {sale.paymentMethod === 'pix' ? 'PIX informado' : 'Acerto posterior'}
+                                  PIX informado
                                 </span>
                               ) : (
                                 <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-500/10 text-amber-700 border border-amber-500/15 rounded-full text-[10px] font-bold">
                                   <Clock className="w-3 h-3" />
-                                  {sale.paymentMethod === 'pix' ? 'PIX informado' : 'Acerto posterior'}
+                                  Acerto posterior
                                 </span>
                               )}
+
+                              {sale.paymentMethod === 'pix' && sale.paymentProofUrl ? (
+                                <a
+                                  href={sale.paymentProofUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-white text-emerald-700 border border-emerald-200 hover:border-emerald-400 rounded-full text-[10px] font-black underline"
+                                  title="Abrir comprovante PIX enviado pelo cliente"
+                                >
+                                  Ver comprovante
+                                </a>
+                              ) : sale.paymentMethod === 'pix' ? (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-zinc-100 text-zinc-500 border border-zinc-200 rounded-full text-[10px] font-bold">
+                                  Sem comprovante
+                                </span>
+                              ) : null}
 
                               <button
                                 type="button"

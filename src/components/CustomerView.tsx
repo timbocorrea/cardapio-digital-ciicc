@@ -319,6 +319,7 @@ export default function CustomerView({
         })),
         totalAmount: cartTotal,
         paymentMethod: selectedPaymentMethod,
+        paymentProofUrl: selectedPaymentMethod === 'pix' ? confirmedPaymentProofUrl : null,
       });
 
       setCheckedOutSaleId(saleId);
