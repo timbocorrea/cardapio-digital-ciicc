@@ -12,6 +12,8 @@ export interface Product {
   description: string;
   price: number;
   available: boolean;
+  stockInitial?: number;
+  stockAvailable?: number;
   category: string;
   emoji: string;
   imageUrl?: string;
