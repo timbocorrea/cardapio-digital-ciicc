@@ -65,6 +65,7 @@ export default function AdminPanel({ products, settings, onExitAdmin, onCoreData
   const [salesLoading, setSalesLoading] = useState(false);
   const [salesSearchQuery, setSalesSearchQuery] = useState('');
   const [salesPaymentFilter, setSalesPaymentFilter] = useState<'all' | 'pix' | 'later'>('all');
+  const [paymentProofPreview, setPaymentProofPreview] = useState<{ url: string; customerName: string } | null>(null);
 
   // Product Selection/Modal State
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
@@ -860,15 +861,17 @@ export default function AdminPanel({ products, settings, onExitAdmin, onCoreData
                               )}
 
                               {sale.paymentMethod === 'pix' && sale.paymentProofUrl ? (
-                                <a
-                                  href={sale.paymentProofUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
+                                <button
+                                  type="button"
+                                  onClick={() => setPaymentProofPreview({
+                                    url: sale.paymentProofUrl || '',
+                                    customerName: sale.customerName,
+                                  })}
                                   className="inline-flex items-center gap-1 px-2.5 py-1 bg-white text-emerald-700 border border-emerald-200 hover:border-emerald-400 rounded-full text-[10px] font-black underline"
                                   title="Abrir comprovante PIX enviado pelo cliente"
                                 >
                                   Ver comprovante
-                                </a>
+                                </button>
                               ) : sale.paymentMethod === 'pix' ? (
                                 <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-zinc-100 text-zinc-500 border border-zinc-200 rounded-full text-[10px] font-bold">
                                   Sem comprovante
@@ -930,6 +933,58 @@ export default function AdminPanel({ products, settings, onExitAdmin, onCoreData
             </div>
           </div>
         )}
+
+        <AnimatePresence>
+          {paymentProofPreview && (
+            <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-xs p-4">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.96, y: 12 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.96, y: 12 }}
+                className="w-full max-w-4xl h-[82vh] bg-white rounded-3xl overflow-hidden shadow-2xl border border-zinc-200 flex flex-col"
+              >
+                <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-zinc-150 bg-zinc-50">
+                  <div className="min-w-0">
+                    <span className="text-[10px] uppercase tracking-wider font-black text-emerald-600">
+                      Comprovante PIX
+                    </span>
+                    <h3 className="font-display font-bold text-base text-zinc-900 truncate">
+                      {paymentProofPreview.customerName}
+                    </h3>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <a
+                      href={paymentProofPreview.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3 py-2 rounded-xl border border-zinc-200 bg-white hover:bg-zinc-100 text-[11px] font-bold text-zinc-700"
+                    >
+                      Abrir em nova aba
+                    </a>
+
+                    <button
+                      type="button"
+                      onClick={() => setPaymentProofPreview(null)}
+                      className="p-2 rounded-xl border border-zinc-200 bg-white hover:bg-zinc-100 text-zinc-600"
+                      title="Fechar comprovante"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex-1 bg-zinc-100 p-3">
+                  <iframe
+                    title={`Comprovante PIX de ${paymentProofPreview.customerName}`}
+                    src={paymentProofPreview.url}
+                    className="w-full h-full rounded-2xl border border-zinc-200 bg-white"
+                  />
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
 
         {/* TAB 5: Product batch control is outside the current Supabase schema. */}
         {activeTab === 'batches' && (
